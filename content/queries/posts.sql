@@ -4,3 +4,9 @@ INSERT INTO posts (slug, title, summary, body)
 RETURNING
     *;
 
+-- name: GetPosts :many
+SELECT
+    *
+FROM
+    posts;
+
