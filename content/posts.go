@@ -43,7 +43,7 @@ type CreatePostResponse struct {
 
 // CreatePost adds a new post to the database.
 //
-//encore:api public method=POST path=/content/posts
+//encore:api auth method=POST path=/content/posts
 func CreatePost(ctx context.Context, params *CreatePostParams) (*CreatePostResponse, error) {
 	p, err := queries.New(contentDB.Stdlib()).CreatePost(ctx, queries.CreatePostParams{
 		Slug:    params.Slug,
@@ -73,7 +73,7 @@ type GetPostResponse struct {
 
 // GetPost returns all posts.
 //
-//encore:api public method=GET path=/content/posts/:slug
+//encore:api auth method=GET path=/content/posts/:slug
 func GetPost(ctx context.Context, slug string) (*GetPostResponse, error) {
 	post, err := queries.New(contentDB.Stdlib()).GetPost(ctx, slug)
 	if err != nil {
@@ -103,7 +103,7 @@ type GetPostsResponse struct {
 
 // GetPosts returns all posts.
 //
-//encore:api public method=GET path=/content/posts
+//encore:api auth method=GET path=/content/posts
 func GetPosts(ctx context.Context) (*GetPostsResponse, error) {
 	posts, err := queries.New(contentDB.Stdlib()).GetPosts(ctx)
 	if err != nil {
