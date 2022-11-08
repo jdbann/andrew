@@ -63,6 +63,31 @@ func CreatePost(ctx context.Context, params *CreatePostParams) (*CreatePostRespo
 	}, nil
 }
 
+// GetPostResponse is the response data for the GetPosts endpoint.
+type GetPostResponse struct {
+	Post Post
+}
+
+// GetPost returns all posts.
+//
+//encore:api public method=GET path=/content/posts/:slug
+func GetPost(ctx context.Context, slug string) (*GetPostResponse, error) {
+	post, err := queries.New(contentDB.Stdlib()).GetPost(ctx, slug)
+	if err != nil {
+		return nil, err
+	}
+
+	return &GetPostResponse{
+		Post: Post{
+			Slug:      post.Slug,
+			Title:     post.Title,
+			Summary:   post.Summary,
+			Body:      post.Body,
+			CreatedAt: post.CreatedAt,
+		},
+	}, nil
+}
+
 // GetPostsResponse is the response data for the GetPosts endpoint.
 type GetPostsResponse struct {
 	// Collection of posts.
