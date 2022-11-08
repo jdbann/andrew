@@ -4,6 +4,15 @@ INSERT INTO posts (slug, title, summary, body)
 RETURNING
     *;
 
+-- name: GetPost :one
+SELECT
+    *
+FROM
+    posts
+WHERE
+    slug = $1
+LIMIT 1;
+
 -- name: GetPosts :many
 SELECT
     *
