@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"encore.app/content"
+	"encore.dev/beta/errs"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
@@ -49,19 +50,47 @@ func TestGetPost(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	res, err := content.GetPost(context.Background(), "a-test-post")
-
-	if diff := cmp.Diff(&content.GetPostResponse{
-		Post: content.Post{
-
-			Slug:      "a-test-post",
-			Title:     "A test post",
-			Summary:   "Just verifying that creating a post works.",
-			Body:      "Sometimes it's worth being careful. Adding tests is a great way to do that.\n\nEspecially if they're run automatically!",
-			CreatedAt: time.Now(),
+	tests := []struct {
+		name        string
+		slug        string
+		wantRes     *content.GetPostResponse
+		wantErrCode errs.ErrCode
+	}{
+		{
+			name: "success",
+			slug: "a-test-post",
+			wantRes: &content.GetPostResponse{
+				Post: content.Post{
+					Slug:      "a-test-post",
+					Title:     "A test post",
+					Summary:   "Just verifying that creating a post works.",
+					Body:      "Sometimes it's worth being careful. Adding tests is a great way to do that.\n\nEspecially if they're run automatically!",
+					CreatedAt: time.Now(),
+				},
+			},
+			wantErrCode: errs.OK,
 		},
-	}, res, cmpopts.EquateApproxTime(time.Second)); diff != "" {
-		t.Error(diff)
+		{
+			name:        "not found",
+			slug:        "unknown-post",
+			wantRes:     nil,
+			wantErrCode: errs.NotFound,
+		},
+	}
+
+	for _, tt := range tests {
+
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := content.GetPost(context.Background(), tt.slug)
+
+			if tt.wantErrCode != errs.Code(err) {
+				t.Errorf("want error code %q; got %q", tt.wantErrCode.String(), errs.Code(err).String())
+			}
+
+			if diff := cmp.Diff(tt.wantRes, res, cmpopts.EquateApproxTime(time.Second)); diff != "" {
+				t.Error(diff)
+			}
+		})
 	}
 }
 

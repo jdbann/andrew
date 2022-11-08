@@ -13,11 +13,6 @@ func setupDB(t *testing.T) {
 	if err := truncateDB(); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() {
-		if err := truncateDB(); err != nil {
-			t.Fatal(err)
-		}
-	})
 }
 
 func truncateDB() error {

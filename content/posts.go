@@ -2,9 +2,12 @@ package content
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"time"
 
 	"encore.app/content/queries"
+	"encore.dev/beta/errs"
 )
 
 // Post is an entry in the blog.
@@ -49,7 +52,7 @@ func CreatePost(ctx context.Context, params *CreatePostParams) (*CreatePostRespo
 		Body:    params.Body,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errs.B().Cause(err).Err()
 	}
 
 	return &CreatePostResponse{
@@ -74,7 +77,11 @@ type GetPostResponse struct {
 func GetPost(ctx context.Context, slug string) (*GetPostResponse, error) {
 	post, err := queries.New(contentDB.Stdlib()).GetPost(ctx, slug)
 	if err != nil {
-		return nil, err
+		b := errs.B().Cause(err)
+		if errors.Is(err, sql.ErrNoRows) {
+			b.Code(errs.NotFound).Msg("post not found")
+		}
+		return nil, b.Err()
 	}
 
 	return &GetPostResponse{
@@ -100,7 +107,7 @@ type GetPostsResponse struct {
 func GetPosts(ctx context.Context) (*GetPostsResponse, error) {
 	posts, err := queries.New(contentDB.Stdlib()).GetPosts(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errs.B().Cause(err).Err()
 	}
 
 	res := &GetPostsResponse{
