@@ -19,3 +19,10 @@ SELECT
 FROM
     posts;
 
+-- name: SeedPost :exec
+INSERT INTO posts (slug, title, summary, body, created_at)
+    VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (slug)
+    DO UPDATE SET
+        title = EXCLUDED.title, summary = EXCLUDED.summary, body = EXCLUDED.body, created_at = EXCLUDED.created_at;
+
