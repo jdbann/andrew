@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"time"
 )
 
 const createPost = `-- name: CreatePost :one
@@ -101,4 +102,31 @@ func (q *Queries) GetPosts(ctx context.Context) ([]Post, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const seedPost = `-- name: SeedPost :exec
+INSERT INTO posts (slug, title, summary, body, created_at)
+    VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (slug)
+    DO UPDATE SET
+        title = EXCLUDED.title, summary = EXCLUDED.summary, body = EXCLUDED.body, created_at = EXCLUDED.created_at
+`
+
+type SeedPostParams struct {
+	Slug      string
+	Title     string
+	Summary   string
+	Body      string
+	CreatedAt time.Time
+}
+
+func (q *Queries) SeedPost(ctx context.Context, arg SeedPostParams) error {
+	_, err := q.db.ExecContext(ctx, seedPost,
+		arg.Slug,
+		arg.Title,
+		arg.Summary,
+		arg.Body,
+		arg.CreatedAt,
+	)
+	return err
 }
